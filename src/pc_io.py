@@ -24,7 +24,7 @@ class PC:
         return self.points.shape[0] == 0
 
 
-
+# 从存储点云数据data drame返回归一化后的点的坐标值
 def df_to_pc(df):
     points = df[['x', 'y', 'z']].values
     points = pc_normalize(points)
@@ -33,6 +33,7 @@ def df_to_pc(df):
 
 
 def pa_to_df(points):
+    # pd.DataFrame:有行名和列名的二维列表（这里只有列名，即xyz）
     df = pd.DataFrame(data={
         'x': points[:, 0],
         'y': points[:, 1],
@@ -41,7 +42,7 @@ def pa_to_df(points):
 
     return df
 
-
+# 归一化
 def pc_normalize(pc):
     """pc: NxC, return NxC"""
     l = pc.shape[0]
@@ -66,9 +67,10 @@ def pc_to_df(pc):
     return pa_to_df(points)
 
 
+
 def load_pc(path):
     logger.debug(f"Loading PC {path}")
-    pc = PyntCloud.from_file(path)
+    pc = PyntCloud.from_file(path)  # 读取点云文件
     ret = df_to_pc(pc.points)
     logger.debug(f"Loaded PC {path}")
 
@@ -98,6 +100,9 @@ def load_points(files, batch_size=32):
     with multiprocessing.Pool() as p:
         logger.info('Loading PCs into memory (parallel reading)')
         f = functools.partial(load_points_func)
+        # 按batch_size进行多进程计算，吧files作为参数传递给函数f(即函数load_points_func)
+        # tqmd：可视化代码进度
+        # list：将tuple转换为列表
         points = np.array(list(tqdm(p.imap(f, files, batch_size), total=files_len)))
     return points
 
